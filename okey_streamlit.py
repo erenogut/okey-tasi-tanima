@@ -1,31 +1,30 @@
 import streamlit as st
-import cv2
-import tempfile
 from ultralytics import YOLO
+import cv2
+from PIL import Image
 import numpy as np
-
 
 model = YOLO("best.pt")
 
 st.title("📷 Okey Taşı Tanıma Uygulaması")
-st.markdown("Kameranı kullanarak gerçek zamanlı olarak okey taşlarını tanı!")
 
+uploaded_image = st.file_uploader("Bir okey taşı fotoğrafı yükleyin", type=["jpg", "jpeg", "png"])
 
-run = st.checkbox('Kamerayı Başlat')
+if uploaded_image:
+    image = Image.open(uploaded_image)
+    st.image(image, caption="Yüklenen Görüntü", use_column_width=True)
 
-FRAME_WINDOW = st.image([])
+    
+    img_array = np.array(image)
 
-cap = None
-if run:
-    cap = cv2.VideoCapture(0)
-else:
-    st.warning("Kamerayı başlatmak için kutucuğu işaretle.")
+    
+    results = model(img_array)
 
-while run:
-    ret, frame = cap.read()
-    if not ret:
-        st.error("Kamera görüntüsü alınamadı.")
-        break
+  
+    res_plotted = results[0].plot()
+
+    st.image(res_plotted, caption="Tahmin Sonucu", use_column_width=True)
+
 
     
     results = model(frame)[0]
